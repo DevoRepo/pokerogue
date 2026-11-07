@@ -1,5 +1,7 @@
 import { globalScene } from "#app/global-scene";
 import { settings } from "#app/global-settings-manager";
+import { getLowEndConfig } from "#app/low-end/low-end-config";
+import { getBakedTexture } from "#app/low-end/palette-bake";
 import {
   FieldSpriteBatchHandler,
   type FieldSpriteDrawData,
@@ -65,6 +67,9 @@ interface SpriteDrawData extends FieldSpriteDrawData {
   shadowBaseY: number;
   shadowPadding: number;
   frameHeightScaled: number;
+
+  /** Low-end mode only: replaces the sprite's texture when its palettes have been baked. */
+  bakedTexture: WebGLTextureWrapper | null;
 }
 
 // #region Palettes
@@ -194,6 +199,7 @@ function initSpriteDrawData(): SpriteDrawData {
     shadowBaseY: 0,
     shadowPadding: 0,
     frameHeightScaled: 1,
+    bakedTexture: null,
   };
 }
 
@@ -258,6 +264,26 @@ export class SpriteSubmitter extends FieldSpriteSubmitter {
     out.baseVariantColors = variantPalettes?.base ?? EMPTY_PALETTE_F;
     out.variantColors = variantPalettes?.variant ?? EMPTY_PALETTE_F;
 
+    // Low-end mode: use a recolored copy of the texture, so the shader's palette loops can exit immediately.
+    out.bakedTexture = null;
+    if (
+      getLowEndConfig().bakePalettes
+      && (out.baseVariantColors !== EMPTY_PALETTE_F || out.spriteColors !== EMPTY_PALETTE_F)
+    ) {
+      out.bakedTexture = getBakedTexture(sprite, {
+        variantBase: out.baseVariantColors,
+        variantTarget: out.variantColors,
+        fusionBase: out.spriteColors,
+        fusionTarget: out.fusionSpriteColors,
+      });
+      if (out.bakedTexture) {
+        out.baseVariantColors = EMPTY_PALETTE_F;
+        out.variantColors = EMPTY_PALETTE_F;
+        out.spriteColors = EMPTY_PALETTE_F;
+        out.fusionSpriteColors = EMPTY_PALETTE_I;
+      }
+    }
+
     if (out.hasShadow && field) {
       const fieldScaleRatio = field.scale / 6;
       out.shadowBaseY = ((isEntityObj ? parent.y : sprite.y + sprite.height) * 6) / fieldScaleRatio;
@@ -270,6 +296,7 @@ export class SpriteSubmitter extends FieldSpriteSubmitter {
 }
 
 // Argument positions in batch(), matching SubmitterQuad's call. This _must_ be kept in sync with Phaser's code.
+const ARG_GL_TEXTURE = 1;
 const ARG_Y_BL = 5; // bottom-left y
 const ARG_Y_BR = 9; // bottom-right y
 const ARG_TEX_X = 10;
@@ -306,6 +333,9 @@ export class SpriteBatchHandler extends FieldSpriteBatchHandler {
     // The submitter added a custom field to `renderOptions` so it won't be in the type signature.
     const s = (args[ARG_RENDER_OPTIONS] as any).spriteData as SpriteDrawData;
     this.sprite = s;
+    if (s.bakedTexture) {
+      args[ARG_GL_TEXTURE] = s.bakedTexture;
+    }
 
     const texH = args[ARG_TEX_H];
     this.texFrameUv = [args[ARG_TEX_X], args[ARG_TEX_Y]]; // top-left UV
