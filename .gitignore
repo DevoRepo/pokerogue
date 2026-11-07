@@ -49,3 +49,6 @@ coverage
 game-data-output/*
 # Benchmark output
 benchmark-results
+
+# Wrangler local state
+.wrangler

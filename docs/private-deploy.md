@@ -27,13 +27,13 @@ Run these from the repo root. You need `ffmpeg`, and the submodules checked out.
 2. Upload. The first run asks to create the project:
 
    ```bash
-   npx wrangler@4 pages deploy dist --project-name pokerouge --branch main --commit-dirty=true
+   npx wrangler@4.40.0 pages deploy dist --project-name pokerouge --branch main --commit-dirty=true
    ```
 
 3. Set or change the password. It is stored encrypted at Cloudflare and never in this repo:
 
    ```bash
-   npx wrangler@4 pages secret put SITE_PASSWORD --project-name pokerouge
+   npx wrangler@4.40.0 pages secret put SITE_PASSWORD --project-name pokerouge
    ```
 
 4. Deploy again so the new password takes effect, as in step 2.
@@ -49,3 +49,7 @@ Changing the password signs out every browser.
 ## License
 
 If anyone other than you ever gets access to the site, the AGPL requires offering them this fork's source code. Keep the fork public. Upstream's assets are non-commercial where licensable, and some have no license information, so do not charge for or advertise this site.
+
+## Why Wrangler is pinned
+
+Wrangler 4.158 sends `pages` commands to a newer Workers-based flow, which failed here without a `wrangler.jsonc`. Version 4.40.0 uses the classic Pages commands these steps rely on.
