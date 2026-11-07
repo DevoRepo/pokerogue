@@ -47,3 +47,5 @@ coverage
 # Script outputs
 *.csv
 game-data-output/*
+# Benchmark output
+benchmark-results

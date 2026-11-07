@@ -51,7 +51,37 @@ import type { IntClosedRange, TupleOf } from "type-fest";
  * }
  * ```
  */
-const overrides = {} satisfies Partial<InstanceType<OverridesType>>;
+const overrides = (
+  import.meta.env.VITE_BENCHMARK === "1"
+    ? {
+        // Fixed double battle for `--mode benchmark`, see `src/dev-tools/benchmark-driver.ts`.
+        // Shiny variant fusions on both sides exercise the heaviest sprite shader path.
+        // A low-level player cannot end the battle, and the enemies only use harmless moves.
+        SEED_OVERRIDE: "lowendbenchmark",
+        FIELD_SIZE_OVERRIDE: "double",
+        BATTLE_TYPE_OVERRIDE: BattleType.WILD,
+        STARTING_WAVE_OVERRIDE: 25,
+        STARTING_BIOME_OVERRIDE: BiomeId.FOREST,
+        TIME_OF_DAY_OVERRIDE: TimeOfDay.DAY,
+        WEATHER_OVERRIDE: WeatherType.RAIN,
+        MYSTERY_ENCOUNTER_RATE_OVERRIDE: 0,
+        STARTING_LEVEL_OVERRIDE: 5,
+        STARTER_FUSION_OVERRIDE: true,
+        STARTER_FUSION_SPECIES_OVERRIDE: SpeciesId.DRAGONITE,
+        MOVESET_OVERRIDE: [MoveId.THUNDERBOLT],
+        SHINY_OVERRIDE: true,
+        VARIANT_OVERRIDE: 2,
+        ENEMY_SPECIES_OVERRIDE: SpeciesId.RAYQUAZA,
+        ENEMY_FUSION_OVERRIDE: true,
+        ENEMY_FUSION_SPECIES_OVERRIDE: SpeciesId.GYARADOS,
+        ENEMY_LEVEL_OVERRIDE: 100,
+        ENEMY_MOVESET_OVERRIDE: [MoveId.SPLASH],
+        ENEMY_SHINY_OVERRIDE: true,
+        ENEMY_VARIANT_OVERRIDE: 2,
+        ENEMY_HEALTH_SEGMENTS_OVERRIDE: 1,
+      }
+    : {}
+) satisfies Partial<InstanceType<OverridesType>>;
 
 /**
  * If you need to add Overrides values for local testing do that inside {@linkcode overrides}

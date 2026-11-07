@@ -80,6 +80,15 @@ async function startGame(): Promise<void> {
     version,
   });
   game.sound.pauseOnBlur = isMobile();
+
+  if (import.meta.env.DEV || import.meta.env.VITE_PERF_TOOLS === "1") {
+    const { initPerfOverlay } = await import("#app/dev-tools/perf-overlay");
+    initPerfOverlay();
+  }
+  if (import.meta.env.VITE_BENCHMARK === "1") {
+    const { initBenchmarkDriver } = await import("#app/dev-tools/benchmark-driver");
+    initBenchmarkDriver();
+  }
 }
 
 try {
