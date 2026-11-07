@@ -16,6 +16,8 @@ export interface LowEndConfig {
   fpsLimit: number;
   /** Whether palette swaps are computed once into a texture, not per pixel in the shader. */
   bakePalettes: boolean;
+  /** Whether sound effects load from the Opus files that the deploy build generates. */
+  useOpusSfx: boolean;
 }
 
 const INTERNAL_HEIGHT_TO_SCALE: Readonly<Record<number, number>> = {
@@ -23,7 +25,7 @@ const INTERNAL_HEIGHT_TO_SCALE: Readonly<Record<number, number>> = {
   360: 1 / 3,
 };
 
-const NORMAL_CONFIG: LowEndConfig = { renderScale: 1, fpsLimit: 0, bakePalettes: false };
+const NORMAL_CONFIG: LowEndConfig = { renderScale: 1, fpsLimit: 0, bakePalettes: false, useOpusSfx: false };
 
 let activeConfig: LowEndConfig = NORMAL_CONFIG;
 
@@ -50,6 +52,7 @@ function readBenchmarkConfig(): LowEndConfig {
     renderScale: INTERNAL_HEIGHT_TO_SCALE[Number(params.get("res"))] ?? 1,
     fpsLimit: Number(params.get("fps")) || 0,
     bakePalettes: params.get("bake") === "1",
+    useOpusSfx: false,
   };
 }
 
@@ -62,6 +65,7 @@ export function initLowEndConfig(): LowEndConfig {
       renderScale: INTERNAL_HEIGHT_TO_SCALE[settings.display.internalResolution] ?? 1 / 2,
       fpsLimit: settings.display.lowEndFpsCap,
       bakePalettes: true,
+      useOpusSfx: import.meta.env.VITE_OPUS_SFX === "1",
     };
   } else {
     activeConfig = NORMAL_CONFIG;

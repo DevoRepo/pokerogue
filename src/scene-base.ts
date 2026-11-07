@@ -100,7 +100,13 @@ export class SceneBase extends Phaser.Scene {
     filenames = coerceArray(filenames);
     for (const f of filenames as string[]) {
       // TODO: Use actual path joining logic
-      this.load.audio(folder + key, getCachedUrl(`audio/${folder}${f}`));
+      const url = getCachedUrl(`audio/${folder}${f}`);
+      // Phaser plays the first format the browser supports, so the WAV stays as a fallback.
+      const opusUrl =
+        getLowEndConfig().useOpusSfx && f.endsWith(".wav")
+          ? getCachedUrl(`audio/${folder}${f.slice(0, -4)}.ogg`)
+          : null;
+      this.load.audio(folder + key, opusUrl ? [opusUrl, url] : url);
     }
     return this;
   }
