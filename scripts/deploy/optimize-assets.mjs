@@ -17,6 +17,7 @@ import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { cpus } from "node:os";
 import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import { isMainThread, parentPort, Worker, workerData } from "node:worker_threads";
 
@@ -72,25 +73,34 @@ async function compressPngs() {
   );
   const sum = key => totals.reduce((total, part) => total + part[key], 0);
   console.log(
-    `PNG: ${pngs.length} files, ${(sum("before") / 1048576).toFixed(1)} MiB to ${(sum("after") / 1048576).toFixed(1)} MiB, ${sum("rejected")} kept as they were.`,
+    `PNG: ${pngs.length} files, ${(sum("before") / 1048576).toFixed(1)} MiB to ${(sum("after") / 1048576).toFixed(1)} MiB, ${sum("rejected")} rejected by the pixel check, ${sum("failed")} failed.`,
   );
+  const firstError = totals.find(part => part.firstError)?.firstError;
+  if (firstError) {
+    console.error(`First failure: ${firstError}`);
+  }
+  // A few unusual files can be left as they are, but widespread failure means the tool itself is broken.
+  if (sum("failed") > pngs.length * 0.01) {
+    throw new Error("Too many PNGs failed to compress.");
+  }
 }
 
 /** Runs in each worker thread. */
 async function compressPngChunk(files) {
   const require = createRequire(join(process.cwd(), "package.json"));
   const { PNG } = require("pngjs");
-  const { optimise, init } = await import(require.resolve("@jsquash/oxipng/optimise.js").replace(/^/, "file://"));
+  const { default: optimise, init } = await import(pathToFileURL(require.resolve("@jsquash/oxipng/optimise.js")).href);
   const wasmPath = require.resolve("@jsquash/oxipng/codec/pkg/squoosh_oxipng_bg.wasm");
   await init(await WebAssembly.compile(readFileSync(wasmPath)));
 
-  const totals = { before: 0, after: 0, rejected: 0 };
+  const totals = { before: 0, after: 0, rejected: 0, failed: 0, firstError: null };
   for (const file of files) {
     const original = readFileSync(file);
     totals.before += original.length;
     let output = original;
     try {
-      const candidate = Buffer.from(await optimise(original, { level: 2, interlace: false, optimiseAlpha: false }));
+      const input = original.buffer.slice(original.byteOffset, original.byteOffset + original.length);
+      const candidate = Buffer.from(await optimise(input, { level: 2, interlace: false, optimiseAlpha: false }));
       if (candidate.length < original.length) {
         const a = PNG.sync.read(original);
         const b = PNG.sync.read(candidate);
@@ -101,8 +111,9 @@ async function compressPngChunk(files) {
           totals.rejected++;
         }
       }
-    } catch {
-      totals.rejected++;
+    } catch (error) {
+      totals.failed++;
+      totals.firstError ??= `${file}: ${error}`;
     }
     totals.after += output.length;
   }
