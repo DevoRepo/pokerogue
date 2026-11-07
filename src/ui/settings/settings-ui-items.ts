@@ -283,6 +283,30 @@ export const displaySettingUiItems: SettingsUiItem<DisplaySettingsKey>[] = [
     ],
   },
   {
+    key: "lowEndMode",
+    label: "Low-end Mode",
+    options: useOnOffOptions(),
+    requiresReload: true,
+  },
+  {
+    key: "internalResolution",
+    label: "Low-end Resolution",
+    options: [
+      { value: 540, label: "960x540" },
+      { value: 360, label: "640x360" },
+    ],
+    requiresReload: true,
+  },
+  {
+    key: "lowEndFpsCap",
+    label: "Low-end FPS Cap",
+    options: [
+      { value: 0, label: t("settings:off") },
+      { value: 30, label: "30" },
+    ],
+    requiresReload: true,
+  },
+  {
     key: "enableMoveAnimations",
     label: t("settings:moveAnimations"),
     options: useOnOffOptions(),

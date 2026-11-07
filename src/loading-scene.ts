@@ -395,8 +395,8 @@ export class LoadingScene extends SceneBase {
       .lineStyle(5, 0xff00ff, 1.0)
       .fillStyle(0x222222, 0.8);
 
-    const width = this.cameras.main.width;
-    const height = this.cameras.main.height;
+    const width = this.scaledCanvas.width * 6;
+    const height = this.scaledCanvas.height * 6;
     const midWidth = width / 2;
     const midHeight = height / 2;
 

@@ -24,6 +24,13 @@ async function startGame(): Promise<void> {
   await initSettingsManager();
   const audioManager = await initGlobalAudioManager();
 
+  const { initLowEndConfig } = await import("#app/low-end/low-end-config");
+  if (import.meta.env.VITE_BENCHMARK !== "1") {
+    const { offerLowEndModeOnFirstLaunch } = await import("#app/low-end/gpu-detect");
+    offerLowEndModeOnFirstLaunch();
+  }
+  const lowEnd = initLowEndConfig();
+
   const LoadingScene = (await import("./loading-scene")).LoadingScene;
   const BattleScene = (await import("./battle-scene")).BattleScene;
   const game = new Phaser.Game({
@@ -33,10 +40,11 @@ async function startGame(): Promise<void> {
       noAudio: !audioManager.isAudioEnabled,
     },
     scale: {
-      width: 1920,
-      height: 1080,
+      width: 1920 * lowEnd.renderScale,
+      height: 1080 * lowEnd.renderScale,
       mode: Phaser.Scale.FIT,
     },
+    ...(lowEnd.fpsLimit > 0 && { fps: { limit: lowEnd.fpsLimit } }),
     plugins: {
       global: [
         {
@@ -80,6 +88,10 @@ async function startGame(): Promise<void> {
     version,
   });
   game.sound.pauseOnBlur = isMobile();
+  if (lowEnd.renderScale !== 1) {
+    // Keeps the art's pixels sharp when the smaller canvas is stretched to fit the window.
+    game.canvas.style.imageRendering = "pixelated";
+  }
 
   if (import.meta.env.DEV || import.meta.env.VITE_PERF_TOOLS === "1") {
     const { initPerfOverlay } = await import("#app/dev-tools/perf-overlay");

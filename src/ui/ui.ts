@@ -1,6 +1,7 @@
 import { audioManager } from "#app/global-audio-manager";
 import { globalScene } from "#app/global-scene";
 import { settings } from "#app/global-settings-manager";
+import { getLowEndConfig } from "#app/low-end/low-end-config";
 import type { Button } from "#enums/buttons";
 import { Device } from "#enums/devices";
 import { PlayerGender } from "#enums/player-gender";
@@ -429,8 +430,9 @@ export class UI extends Phaser.GameObjects.Container {
   public override update(): void {
     if (this.tooltipContainer.visible) {
       const isTouch = globalScene.inputMethod === "touch";
-      const pointerX = globalScene.game.input.activePointer.x;
-      const pointerY = globalScene.game.input.activePointer.y;
+      const { renderScale } = getLowEndConfig();
+      const pointerX = globalScene.game.input.activePointer.x / renderScale;
+      const pointerY = globalScene.game.input.activePointer.y / renderScale;
       const tooltipWidth = this.tooltipBg.width;
       const tooltipHeight = this.tooltipBg.height;
       const padding = 2;
@@ -441,7 +443,10 @@ export class UI extends Phaser.GameObjects.Container {
 
       if (isTouch) {
         // If we are in the top left quadrant on mobile, move the tooltip to the top right corner
-        if (pointerX <= globalScene.game.canvas.width / 2 && pointerY <= globalScene.game.canvas.height / 2) {
+        if (
+          pointerX <= (globalScene.scaledCanvas.width * 6) / 2
+          && pointerY <= (globalScene.scaledCanvas.height * 6) / 2
+        ) {
           x = globalScene.scaledCanvas.width - tooltipWidth - padding;
         }
       } else {

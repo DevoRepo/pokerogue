@@ -1,5 +1,6 @@
 import { audioManager } from "#app/global-audio-manager";
 import { timedEventManager } from "#app/global-event-manager";
+import { getLowEndConfig } from "#app/low-end/low-end-config";
 import { coerceArray } from "#utils/array";
 import { getCachedUrl } from "#utils/fetch-utils";
 import Phaser from "phaser";
@@ -22,6 +23,11 @@ export class SceneBase extends Phaser.Scene {
   } as const;
 
   public init(): void {
+    const { renderScale } = getLowEndConfig();
+    if (renderScale !== 1) {
+      // The world keeps its 1920x1080 coordinates, and the camera fits them into the smaller backbuffer.
+      this.cameras.main.setOrigin(0, 0).setZoom(renderScale);
+    }
     this.load.on(Phaser.Loader.Events.FILE_LOAD, (file: Phaser.Loader.File) => {
       if (file.key.endsWith("_legacy")) {
         const fileKey = file.key.slice(0, -7);

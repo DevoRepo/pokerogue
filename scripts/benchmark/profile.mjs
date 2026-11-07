@@ -14,6 +14,7 @@
  * - `weak` uses software WebGL and a 4x CPU slowdown as a rough stand-in for an old laptop.
  */
 
+import { execSync } from "node:child_process";
 import { createReadStream, existsSync, mkdirSync, statSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, join, normalize, resolve, sep } from "node:path";
@@ -198,6 +199,32 @@ function summarizeCpuProfile(profile) {
   };
 }
 
+/** Total resident memory of Chrome and its helper processes. Shared pages count more than once, so compare runs only. */
+function readProcessTreeRssMb(rootPid) {
+  const rows = execSync("ps -A -o pid=,ppid=,rss=", { encoding: "utf8" })
+    .trim()
+    .split("\n")
+    .map(line => line.trim().split(/\s+/).map(Number));
+  const inTree = new Set([rootPid]);
+  let totalKb = 0;
+  // Parents can appear after their children, so repeat until no new process joins the tree.
+  for (let changed = true; changed; ) {
+    changed = false;
+    for (const [pid, parent] of rows) {
+      if (inTree.has(parent) && !inTree.has(pid)) {
+        inTree.add(pid);
+        changed = true;
+      }
+    }
+  }
+  for (const [pid, , rss] of rows) {
+    if (inTree.has(pid)) {
+      totalKb += rss;
+    }
+  }
+  return totalKb / 1024;
+}
+
 async function runBenchmark(url, traced, outDir) {
   const browser = await puppeteer.launch({
     executablePath: CHROME_PATH,
@@ -251,6 +278,10 @@ async function runBenchmark(url, traced, outDir) {
       });
     }
 
+    let chromeRssPeakMb = 0;
+    const rssSampler = setInterval(() => {
+      chromeRssPeakMb = Math.max(chromeRssPeakMb, readProcessTreeRssMb(browser.process().pid));
+    }, 2000);
     await page.waitForFunction(() => window.__benchmarkResult !== undefined, {
       timeout: RUN_TIMEOUT_MS,
       polling: 1000,
@@ -258,6 +289,8 @@ async function runBenchmark(url, traced, outDir) {
     const result = await page.evaluate(() => window.__benchmarkResult);
     result.secondsToBattle = Math.round((startedAt - launchedAt) / 100) / 10;
     result.pageErrors = pageErrors;
+    clearInterval(rssSampler);
+    result.chromeRssPeakMb = Math.round(chromeRssPeakMb);
     if (!traced) {
       return { result };
     }

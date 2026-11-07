@@ -368,7 +368,8 @@ export class MoveTouchControlsHandler {
    */
   private createOverlay(): void {
     const container = new Phaser.GameObjects.Container(globalScene, 0, 0);
-    const { height, width } = globalScene.game.canvas;
+    const width = globalScene.scaledCanvas.width * 6;
+    const height = globalScene.scaledCanvas.height * 6;
     const overlay = new Phaser.GameObjects.Rectangle(globalScene, 0, 0, width, height, 0x000000, 0.5) //
       .setInteractive();
     container.add(overlay);

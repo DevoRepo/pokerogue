@@ -70,7 +70,7 @@ export class ModifierSelectUiHandler extends AwaitableUiHandler {
     }
 
     this.transferButtonContainer = globalScene.add.container(
-      (globalScene.game.canvas.width - this.checkButtonWidth) / 6 - 21,
+      (globalScene.scaledCanvas.width * 6 - this.checkButtonWidth) / 6 - 21,
       OPTION_BUTTON_YPOSITION,
     );
     this.transferButtonContainer.setName("transfer-btn");
@@ -238,7 +238,7 @@ export class ModifierSelectUiHandler extends AwaitableUiHandler {
       const sliceWidth = globalScene.scaledCanvas.width / (rowOptions.length + 2);
       const option = new ModifierOption(
         sliceWidth * (col + 1) + sliceWidth * 0.5,
-        -globalScene.scaledCanvas.height / 2 - globalScene.game.canvas.height / 32 - (42 - (28 * row - 1)),
+        -globalScene.scaledCanvas.height / 2 - (globalScene.scaledCanvas.height * 6) / 32 - (42 - (28 * row - 1)),
         shopTypeOptions[m],
       );
       option.setScale(0.375);
@@ -573,7 +573,7 @@ export class ModifierSelectUiHandler extends AwaitableUiHandler {
         this.cursorObj.setPosition(
           sliceWidth * (cursor + 1) + sliceWidth * 0.5 - 16,
           -globalScene.scaledCanvas.height / 2
-            - globalScene.game.canvas.height / 32
+            - (globalScene.scaledCanvas.height * 6) / 32
             - (-14 + 28 * (this.rowCursor - (this.shopOptionsRows.length - 1))),
         );
       }
@@ -607,13 +607,13 @@ export class ModifierSelectUiHandler extends AwaitableUiHandler {
       ui.showText(i18next.t("modifierSelectUiHandler:rerollDesc"));
     } else if (cursor === 1) {
       this.cursorObj.setPosition(
-        (globalScene.game.canvas.width - this.transferButtonWidth - this.checkButtonWidth) / 6 - 30,
+        (globalScene.scaledCanvas.width * 6 - this.transferButtonWidth - this.checkButtonWidth) / 6 - 30,
         OPTION_BUTTON_YPOSITION + 1,
       );
       ui.showText(i18next.t("modifierSelectUiHandler:manageItemsDesc"));
     } else if (cursor === 2) {
       this.cursorObj.setPosition(
-        (globalScene.game.canvas.width - this.checkButtonWidth) / 6 - 10,
+        (globalScene.scaledCanvas.width * 6 - this.checkButtonWidth) / 6 - 10,
         OPTION_BUTTON_YPOSITION + 1,
       );
       ui.showText(i18next.t("modifierSelectUiHandler:checkTeamDesc"));

@@ -62,6 +62,11 @@ export interface DisplaySettings {
   enableMoveInfo: boolean;
   hideUsername: boolean;
   language?: string;
+  /** Height of the internal render size in Low-end mode: `540` or `360`. */
+  internalResolution: number;
+  /** Frame rate cap in Low-end mode, or `0` for none. */
+  lowEndFpsCap: number;
+  lowEndMode: boolean;
   moneyFormat: MoneyFormat;
   shopCursorTarget: ShopCursorTarget;
   shopOverlayOpacity: number;

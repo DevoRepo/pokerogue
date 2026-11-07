@@ -36,6 +36,8 @@ export interface BenchmarkResult extends FrameStats {
 declare global {
   interface Window {
     __benchmarkResult?: BenchmarkResult;
+    /** Lets scripts freeze the scene to compare rendering between settings. */
+    __benchmarkScene?: typeof globalScene;
     /** Set by the profiling script so tracing starts exactly when recording does. */
     __benchmarkOnStart?: () => void;
   }
@@ -78,6 +80,7 @@ export function initBenchmarkDriver(): void {
       return;
     }
     const mode = ui.mode;
+    window.__benchmarkScene = globalScene;
 
     if (!started) {
       if (mode === UiMode.TITLE) {

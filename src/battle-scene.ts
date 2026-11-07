@@ -455,7 +455,7 @@ export class BattleScene extends SceneBase {
       .setName("field")
       .setScale(6);
     this.fieldUI = this.add //
-      .container(0, this.game.canvas.height)
+      .container(0, this.scaledCanvas.height * 6)
       .setName("field-ui")
       .setDepth(1)
       .setScale(6);

@@ -209,7 +209,7 @@ export abstract class LoginRegisterInfoContainerUiHandler extends FormModalUiHan
 
     this.setInteractive(false);
     this.infoContainer.setInteractive(
-      new Phaser.Geom.Rectangle(0, 0, globalScene.game.canvas.width, globalScene.game.canvas.height),
+      new Phaser.Geom.Rectangle(0, 0, globalScene.scaledCanvas.width * 6, globalScene.scaledCanvas.height * 6),
       Phaser.Geom.Rectangle.Contains,
     );
   }

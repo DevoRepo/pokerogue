@@ -1,4 +1,5 @@
 import { globalScene } from "#app/global-scene";
+import { applyLowEndDefaults } from "#app/low-end/low-end-config";
 import { LANGUAGE_MAX_OPTIONS } from "#constants/app-constants";
 import { UiMode } from "#enums/ui-mode";
 import { SUPPORTED_LANGUAGE_ENTRIES, type SupportedLanguage } from "#system/supported-languages";
@@ -17,6 +18,9 @@ export class SettingsDisplayUiHandler extends BaseSettingsUiHandler {
     if (uiItem.key === "language" && newValue) {
       this.displayLanguageOptions();
       return;
+    }
+    if (uiItem.key === "lowEndMode" && newValue) {
+      applyLowEndDefaults();
     }
 
     super.handleSaveSetting(uiItem, newValue);

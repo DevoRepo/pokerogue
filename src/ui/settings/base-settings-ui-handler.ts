@@ -181,7 +181,7 @@ export class BaseSettingsUiHandler extends MessageUiHandler {
     this.messageBoxContainer.add(settingsMessageBox);
 
     const messageText = addTextObject(8, -40, "", TextStyle.WINDOW, { maxLines: 2 })
-      .setWordWrapWidth(globalScene.game.canvas.width - 60)
+      .setWordWrapWidth(globalScene.scaledCanvas.width * 6 - 60)
       .setName("settings-message")
       .setOrigin(0);
 

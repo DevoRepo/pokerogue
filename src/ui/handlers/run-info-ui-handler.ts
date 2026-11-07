@@ -95,8 +95,8 @@ export class RunInfoUiHandler extends UiHandler {
     const gameStatsBg = globalScene.add.rectangle(
       0,
       0,
-      globalScene.game.canvas.width,
-      globalScene.game.canvas.height,
+      globalScene.scaledCanvas.width * 6,
+      globalScene.scaledCanvas.height * 6,
       0x006860,
     );
     gameStatsBg.setOrigin(0, 0);
@@ -1006,7 +1006,7 @@ export class RunInfoUiHandler extends UiHandler {
     const overlayColor = isFemale ? "red" : "blue";
     const hallofFameBg = globalScene.add.image(0, 0, "hall_of_fame_" + overlayColor);
     hallofFameBg.setPosition(159, 89);
-    hallofFameBg.setSize(globalScene.game.canvas.width, globalScene.game.canvas.height + 10);
+    hallofFameBg.setSize(globalScene.scaledCanvas.width * 6, globalScene.scaledCanvas.height * 6 + 10);
     hallofFameBg.setAlpha(0.8);
     this.hallofFameContainer.add(endCard);
     this.hallofFameContainer.add(hallofFameBg);
